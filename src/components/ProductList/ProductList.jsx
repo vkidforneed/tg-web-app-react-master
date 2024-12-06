@@ -1,83 +1,91 @@
-import React, {useState} from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import './ProductList.css';
-import ProductItem from "../ProductItem/ProductItem";
-import {useTelegram} from "../../hooks/useTelegram";
-import {useCallback, useEffect} from "react";
+import { useTelegram } from "../../hooks/useTelegram";
 
 const products = [
-    {id: '1', title: 'Пицца', price: 5000, description: ''},
-    {id: '2', title: 'Шаурма', price: 12000, description: ''},
-    {id: '3', title: 'Бутерброд с колбасой', price: 5000, description: ''},
-    {id: '4', title: 'Бутерброд с котлетой', price: 122, description: ''},
-    {id: '5', title: 'Цезарь', price: 5000, description: ''},
-    {id: '6', title: 'Черноголовка байкал', price: 600, description: ''},
-    {id: '7', title: 'Черноголовка лимонад', price: 5500, description: ''},
-    {id: '8', title: 'Вода', price: 12000, description: ''},
-]
+    { id: '1', title: 'Пицца', price: 90, description: '', image: 'pizza.jpg' },
+    { id: '2', title: 'Цезарь', price: 150, description: '', image: 'caesar.jpg' },
+    { id: '3', title: 'Шаурма', price: 120, description: '', image: 'shawarma.jpg' },
+    { id: '4', title: 'Минеральная вода', price: 50, description: '', image: 'water.jpg' },
+    { id: '5', title: 'Лимонад', price: 60, description: '', image: 'soda.jpg' },
+    { id: '6', title: 'Кока-Кола', price: 70, description: '', image: 'cola.jpg' }
+];
 
 const getTotalPrice = (items = []) => {
-    return items.reduce((acc, item) => {
-        return acc += item.price
-    }, 0)
-}
+    return items.reduce((acc, item) => acc + item.price, 0);
+};
 
 const ProductList = () => {
     const [addedItems, setAddedItems] = useState([]);
-    const {tg, queryId} = useTelegram();
+    const { tg, queryId } = useTelegram();
 
     const onSendData = useCallback(() => {
         const data = {
             products: addedItems,
             totalPrice: getTotalPrice(addedItems),
             queryId,
-        }
-        fetch('http://85.119.146.179:8000/web-data', {
+        };
+        fetch('http://localhost:8000', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(data)
-        })
-    }, [addedItems])
+        });
+    }, [addedItems, queryId]);
 
     useEffect(() => {
-        tg.onEvent('mainButtonClicked', onSendData)
+        tg.onEvent('mainButtonClicked', onSendData);
         return () => {
-            tg.offEvent('mainButtonClicked', onSendData)
-        }
-    }, [onSendData])
+            tg.offEvent('mainButtonClicked', onSendData);
+        };
+    }, [onSendData, tg]);
 
     const onAdd = (product) => {
         const alreadyAdded = addedItems.find(item => item.id === product.id);
         let newItems = [];
 
-        if(alreadyAdded) {
+        if (alreadyAdded) {
             newItems = addedItems.filter(item => item.id !== product.id);
         } else {
             newItems = [...addedItems, product];
         }
 
-        setAddedItems(newItems)
+        setAddedItems(newItems);
 
-        if(newItems.length === 0) {
+        if (newItems.length === 0) {
             tg.MainButton.hide();
         } else {
             tg.MainButton.show();
             tg.MainButton.setParams({
-                text: `Купить ${getTotalPrice(newItems)}`
-            })
+                text: `Купить ${getTotalPrice(newItems)} руб.`
+            });
         }
-    }
+    };
 
     return (
-        <div className={'list'}>
+        <div className="list">
             {products.map(item => (
                 <ProductItem
+                    key={item.id}
                     product={item}
                     onAdd={onAdd}
-                    className={'item'}
+                    className="item"
                 />
             ))}
+        </div>
+    );
+};
+
+const ProductItem = ({ product, onAdd }) => {
+    return (
+        <div className="item">
+            <img src={`/static/images/${product.image}`} alt={product.title} />
+            <div>
+                <h3>{product.title}</h3>
+                <p>Цена: {product.price} руб.</p>
+                <button onClick={() => onAdd(product)}>Добавить в корзину</button>
+            </div>
         </div>
     );
 };
