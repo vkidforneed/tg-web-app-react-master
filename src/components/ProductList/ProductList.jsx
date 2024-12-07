@@ -2,12 +2,12 @@ import React, { useState, useCallback, useEffect } from 'react';
 import './ProductList.css';
 import { useTelegram } from "../../hooks/useTelegram";
 
-import pizza from './images/pizza.jpg';
-import caesar from './images/caesar.jpg';
-import shawarma from './images/shawarma.jpg';
-import water from './images/water.jpg';
-import soda from './images/soda.jpg';
-import cola from './images/cola.jpg';
+     import pizza from '../images/pizza.jpg';
+     import caesar from '../images/caesar.jpg';
+     import shawarma from '../images/shawarma.jpg';
+     import water from '../images/water.jpg';
+     import soda from '../images/soda.jpg';
+     import cola from '../images/cola.jpg';
 
 const products = [
     { id: '1', title: 'Пицца', price: 90, description: '', image: 'pizza.jpg' },
